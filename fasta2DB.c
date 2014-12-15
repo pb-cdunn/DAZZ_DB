@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
     for (c = 2; c < argc; c++)
       { FILE *input;
         char *path, *core, *prolog;
-        int   nline, eof, rlen, pcnt;
+        int   nline, eof, rlen, rrlen,  pcnt;
         int   pwell;
 
         //  Open it: <path>/<core>.fasta, check that core is not too long,
@@ -379,19 +379,25 @@ int main(int argc, char *argv[])
 
               if (end-beg >= 0x10000)
                 { fprintf(stderr,"File %s.fasta, Line %d:",core,hline);
-                  fprintf(stderr," Error: Read is longer than 2^16-1.\n");
-                  exit (1);
+                  fprintf(stderr," Warning: Read is longer than 2^16-1. Read truncated.\n");
+                  //exit (1);
+                  rrlen = 0x10000 - 1;
+                  end = beg + 0x10000 - 1;
+                  read[rrlen] = '\0';
                 }
+              else
+                { rrlen = rlen; } 
+                
 
-              for (i = 0; i < rlen; i++)
+              for (i = 0; i < rrlen; i++)
                 { x = number[(int) read[i]];
                   count[x] += 1;
                   read[i]   = (char) x;
                 }
               oreads += 1;
-              totlen += rlen;
-              if (rlen > maxlen)
-                maxlen = rlen;
+              totlen += rrlen;
+              if (rrlen > maxlen)
+                maxlen = rrlen;
 
               prec[pcnt].origin = well;
               prec[pcnt].beg    = beg;
@@ -400,8 +406,8 @@ int main(int argc, char *argv[])
               prec[pcnt].coff   = -1;
               prec[pcnt].flags  = qv;
 
-              Compress_Read(rlen,read);
-              clen = COMPRESSED_LEN(rlen);
+              Compress_Read(rrlen,read);
+              clen = COMPRESSED_LEN(rrlen);
               fwrite(read,1,clen,bases);
               offset += clen;
 
