@@ -274,6 +274,7 @@ int main(int argc, char *argv[])
 
         pcnt  = 0;
         rlen  = 0;
+        rrlen = 0;
         nline = 1;
         eof   = (fgets(read,MAX_NAME,input) == NULL);
         if (eof || strlen(read) < 1)
