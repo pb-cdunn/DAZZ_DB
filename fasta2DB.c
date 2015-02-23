@@ -379,7 +379,7 @@ int main(int argc, char *argv[])
                 }
               read[rlen] = '\0';
 
-              if ((!USE_READ_LENGTH && end-beg >= 0x10000) || (USE_READ_LENGTH && rlen >= 0x10000))
+              if (end-beg >= 0x10000)
                 { fprintf(stderr,"File %s.fasta, Line %d:",core,hline);
                   fprintf(stderr," Warning: Read is longer than 2^16-1. Read truncated.\n");
                   //exit (1);
@@ -402,7 +402,7 @@ int main(int argc, char *argv[])
                 maxlen = rrlen;
 
               prec[pcnt].origin = well;
-              if (USE_READ_LENGTH) {
+              if (USE_READ_LENGTH || end - beg != rrlen) {
                 prec[pcnt].beg    = 0;
                 prec[pcnt].end    = rrlen;
               } else {
