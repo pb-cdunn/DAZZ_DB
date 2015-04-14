@@ -58,7 +58,7 @@
 #define PATHSEP "/"
 #endif
 
-static char *Usage = "[-v] <path:db> <track:name>";
+static char *Usage = "[-v] <path:db|dam> <track:name>";
 
 int main(int argc, char *argv[])
 { char *prefix;
@@ -89,9 +89,14 @@ int main(int argc, char *argv[])
   }
 
   { char *pwd, *root;
+    int   plen;
 
-    pwd    = PathTo(argv[1]);
-    root   = Root(argv[1],".db");
+    plen = strlen(argv[1]);
+    if (strcmp(argv[1]+(plen-3),".dam") == 0)
+      root = Root(argv[1],".dam");
+    else
+      root = Root(argv[1],".db");
+    pwd = PathTo(argv[1]);
     prefix = Strdup(Catenate(pwd,PATHSEP,root,"."),"Allocating track name");
     free(pwd);
     free(root);
@@ -106,7 +111,7 @@ int main(int argc, char *argv[])
     dout = fopen(Catenate(prefix,argv[2],".","data"),"r");
     if (dout != NULL)
       { fprintf(stderr,"%s: Track file %s%s.data already exists!\n",Prog_Name,prefix,argv[2]);
-        fclose(aout);
+        fclose(dout);
         exit (1);
       }
 
@@ -139,7 +144,7 @@ int main(int argc, char *argv[])
         dfile = fopen(Numbered_Suffix(prefix,nfiles+1,Catenate(".",argv[2],".","data")),"r");
 
         if (VERBOSE)
-          { fprintf(stderr,"Concatenating %s.%d.%s ...\n",prefix,nfiles+1,argv[2]);
+          { fprintf(stderr,"Concatenating %s%d.%s ...\n",prefix,nfiles+1,argv[2]);
             fflush(stderr);
           }
   

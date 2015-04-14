@@ -69,7 +69,7 @@ static int Lowr[4] = { 'a', 'c', 'g', 't' };
 
 #endif
 
-static char *Usage = "[-b] [-w<int(64)>] [-t<double(2.)>] [-m<int(10)>] <path:db>";
+static char *Usage = "[-b] [-w<int(64)>] [-t<double(2.)>] [-m<int(10)>] <path:db|dam>";
 
 typedef struct _cand
   { struct _cand *next;
@@ -82,7 +82,8 @@ typedef struct _cand
 int main(int argc, char *argv[])
 { HITS_DB   _db, *db = &_db;
   FILE      *afile, *dfile;
-  int        indx, nreads;
+  int64      indx;
+  int        nreads;
   int       *mask;
   Candidate *cptr;
 
@@ -135,8 +136,14 @@ int main(int argc, char *argv[])
       }
   }
 
-  if (Open_DB(argv[1],db))
-    exit (1);
+  //  Open .db or .dam
+
+  { int status;
+
+    status = Open_DB(argv[1],db);
+    if (status < 0)
+      exit (1);
+  }
 
   mask = (int *) Malloc((db->maxlen+1)*sizeof(int),"Allocating mask vector");
   cptr = (Candidate *) Malloc((WINDOW+1)*sizeof(Candidate),"Allocating candidate vector");
@@ -148,7 +155,7 @@ int main(int argc, char *argv[])
 
     pwd   = PathTo(argv[1]);
     root  = Root(argv[1],".db");
-    size  = 4;
+    size  = 8;
 
     fname = Catenate(pwd,PATHSEP,root,".dust.anno");
     if ((afile = fopen(fname,"r+")) == NULL || db->part > 0)
@@ -160,8 +167,9 @@ int main(int argc, char *argv[])
           exit (1);
         fwrite(&(db->nreads),sizeof(int),1,afile);
         fwrite(&size,sizeof(int),1,afile);
-        indx = nreads = 0;
-        fwrite(&indx,sizeof(int),1,afile);
+        nreads = 0;
+        indx = 0;
+        fwrite(&indx,sizeof(int64),1,afile);
       }
     else
       { dfile = Fopen(Catenate(pwd,PATHSEP,root,".dust.data"),"r+");
@@ -179,7 +187,7 @@ int main(int argc, char *argv[])
         fwrite(&size,sizeof(int),1,afile);
         fseeko(afile,0,SEEK_END);
         fseeko(dfile,0,SEEK_END);
-        indx   = ftello(dfile);
+        indx = ftello(dfile);
       }
 
     free(pwd);
@@ -229,7 +237,7 @@ int main(int argc, char *argv[])
         int        wb, lb;
         int        j, c, d;
 
-        len = db->reads[i].end - db->reads[i].beg;	//  Fetch read
+        len = db->reads[i].rlen;	  //  Fetch read
         Load_Read(db,i,read,0);
 
         c = (read[0] << 2) | read[1];     //   Convert to triple codes
@@ -455,11 +463,11 @@ int main(int argc, char *argv[])
           for (jtop = mask1; jtop < mtop; jtop += 2)
             if (jtop[1] - jtop[0] >= MINLEN)
               { mask[++ntop] = jtop[0];
-                mask[++ntop] = jtop[1];
+                mask[++ntop] = jtop[1]+1;
               }
           mtop  = mask + ntop;
           indx += ntop*sizeof(int);
-          fwrite(&indx,sizeof(int),1,afile);
+          fwrite(&indx,sizeof(int64),1,afile);
           fwrite(mask1,sizeof(int),ntop,dfile);
         }
 

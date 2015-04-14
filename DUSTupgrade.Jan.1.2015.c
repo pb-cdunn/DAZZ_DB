@@ -35,15 +35,12 @@
 *                                                                                    *
 \************************************************************************************/
 
-/********************************************************************************************
+/*******************************************************************************************
  *
- *  Remove a list of .db databases
- *     Delete all the files for the given data bases <name>.db ... (there are a couple
- *     of hidden . files for each DB, and these are removed too.)  Do not use "rm" to
- *     remove a database.
+ *  Interim code: upgrade previous db to have fpulse,rlen fields
  *
  *  Author:  Gene Myers
- *  Date  :  July 2013
+ *  Date  :  December 2014
  *
  ********************************************************************************************/
 
@@ -54,24 +51,67 @@
 
 #include "DB.h"
 
-static char *Usage = "<path:db|dam> ... ";
-
-static void HANDLER(char *path, char *name)
-{ (void) name;
-  unlink(path);
-}
+#ifdef HIDE_FILES
+#define PATHSEP "/."
+#else
+#define PATHSEP "/"
+#endif
 
 int main(int argc, char *argv[])
-{ int   i;
+{ FILE      *afile, *dfile;
+  FILE      *nafile, *ndfile;
+  char      *pwd, *root;
+  int        size, tracklen;
+  int        i, vint, dint;
+  int64      vlong;
 
-  Prog_Name = Strdup("DBrm","");
+  if (argc != 2)
+    { fprintf(stderr,"Usage: %s <path:db>\n",argv[0]);
+      exit (1);
+    }
 
-  if (argc <= 1)
-    fprintf(stderr,"Usage: %s %s\n",Prog_Name,Usage);
+  pwd    = PathTo(argv[1]);
+  root   = Root(argv[1],".db");
+  afile  = Fopen(Catenate(pwd,PATHSEP,root,".dust.anno"),"r");
+  dfile  = Fopen(Catenate(pwd,PATHSEP,root,".dust.data"),"r");
+  nafile = Fopen(Catenate(pwd,PATHSEP,root,".next.anno"),"w");
+  ndfile = Fopen(Catenate(pwd,PATHSEP,root,".next.data"),"w");
+  if (afile == NULL || dfile == NULL || nafile == NULL || ndfile == NULL)
+    exit (1);
+  free(pwd);
+  free(root);
 
-  for (i = 1; i < argc; i++)
-    if (List_DB_Files(argv[i],HANDLER))
-      fprintf(stderr,"%s: Could not list database %s\n",Prog_Name,argv[i]);
+  if (fread(&tracklen,sizeof(int),1,afile) != 1)
+    SYSTEM_ERROR
+  fwrite(&tracklen,sizeof(int),1,nafile);
+
+  if (fread(&size,sizeof(int),1,afile) != 1)
+    SYSTEM_ERROR
+  size = 8;
+  fwrite(&size,sizeof(int),1,nafile);
+
+  for (i = 0; i <= tracklen; i++)
+    { if (fread(&vint,sizeof(int),1,afile) != 1)
+        SYSTEM_ERROR
+      vlong = vint;
+      fwrite(&vlong,sizeof(int64),1,nafile);
+    }
+
+  vint >>= 2;
+  for (i = 0; i < vint; i += 2)
+    { if (fread(&dint,sizeof(int),1,dfile) != 1)
+        SYSTEM_ERROR
+      fwrite(&dint,sizeof(int),1,ndfile);
+      if (fread(&dint,sizeof(int),1,dfile) != 1)
+        SYSTEM_ERROR
+      dint += 1;
+      fwrite(&dint,sizeof(int),1,ndfile);
+    }
+
+  fclose(nafile);
+  fclose(ndfile);
+  fclose(afile);
+  fclose(dfile);
 
   exit (0);
 }

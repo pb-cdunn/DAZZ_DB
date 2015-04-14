@@ -69,12 +69,13 @@
 #define PATHSEP "/"
 #endif
 
-static char *Usage = "[-a] [-x<int>] [-s<int(400)>] <path:db>";
+static char *Usage = "[-a] [-x<int>] [-s<int(200)>] <path:db|dam>";
 
 int main(int argc, char *argv[])
 { HITS_DB    db, dbs;
   int64      dbpos;
   FILE      *dbfile, *ixfile;
+  int        status;
 
   int        ALL;
   int        CUTOFF;
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
     ARG_INIT("DBsplit")
 
     CUTOFF = 0;
-    SIZE   = 400;
+    SIZE   = 200;
 
     j = 1;
     for (i = 1; i < argc; i++)
@@ -115,10 +116,13 @@ int main(int argc, char *argv[])
       }
   }
 
-  if (Open_DB(argv[1],&db))
+  //  Open db
+
+  status = Open_DB(argv[1],&db);
+  if (status < 0)
     exit (1);
   if (db.part > 0)
-    { fprintf(stderr,"%s: Command only applies to the entire DB\n",Prog_Name);
+    { fprintf(stderr,"%s: Cannot be called on a block: %s\n",Prog_Name,argv[1]);
       exit (1);
     }
 
@@ -128,8 +132,14 @@ int main(int argc, char *argv[])
     int      i;
 
     pwd    = PathTo(argv[1]);
-    root   = Root(argv[1],".db");
-    dbfile = Fopen(Catenate(pwd,"/",root,".db"),"r+");
+    if (status)
+      { root   = Root(argv[1],".dam");
+        dbfile = Fopen(Catenate(pwd,"/",root,".dam"),"r+");
+      }
+    else
+      { root   = Root(argv[1],".db");
+        dbfile = Fopen(Catenate(pwd,"/",root,".db"),"r+");
+      }
     ixfile = Fopen(Catenate(pwd,PATHSEP,root,".idx"),"r+");
     if (dbfile == NULL || ixfile == NULL)
       exit (1);
@@ -167,9 +177,9 @@ int main(int argc, char *argv[])
   }
 
   { HITS_READ *reads  = db.reads;
-    int        nreads = db.oreads;
+    int        nreads = db.ureads;
     int64      size, totlen;
-    int        nblock, ireads, breads, rlen, fno;
+    int        nblock, ireads, treads, rlen, fno;
     int        i;
 
     size = SIZE*1000000ll;
@@ -177,17 +187,17 @@ int main(int argc, char *argv[])
     nblock = 0;
     totlen = 0;
     ireads = 0;
-    breads = 0;
+    treads = 0;
     fprintf(dbfile,DB_BDATA,0,0);
     if (ALL)
       for (i = 0; i < nreads; i++)
-        { rlen = reads[i].end - reads[i].beg;
+        { rlen = reads[i].rlen;
           if (rlen >= CUTOFF)
             { ireads += 1;
-              breads += 1;
+              treads += 1;
               totlen += rlen;
-              if (totlen >= size || ireads >= READMAX)
-                { fprintf(dbfile,DB_BDATA,i+1,breads);
+              if (totlen >= size)
+                { fprintf(dbfile,DB_BDATA,i+1,treads);
                   totlen = 0;
                   ireads = 0;
                   nblock += 1;
@@ -196,13 +206,13 @@ int main(int argc, char *argv[])
         }
     else
       for (i = 0; i < nreads; i++)
-        { rlen = reads[i].end - reads[i].beg;
+        { rlen = reads[i].rlen;
           if (rlen >= CUTOFF && (reads[i].flags & DB_BEST) != 0)
             { ireads += 1;
-              breads += 1;
+              treads += 1;
               totlen += rlen;
-              if (totlen >= size || ireads >= READMAX)
-                { fprintf(dbfile,DB_BDATA,i+1,breads);
+              if (totlen >= size)
+                { fprintf(dbfile,DB_BDATA,i+1,treads);
                   totlen = 0;
                   ireads = 0;
                   nblock += 1;
@@ -211,7 +221,7 @@ int main(int argc, char *argv[])
         }
 
     if (ireads > 0)
-      { fprintf(dbfile,DB_BDATA,nreads,breads);
+      { fprintf(dbfile,DB_BDATA,nreads,treads);
         nblock += 1;
       }
     fno = fileno(dbfile);
@@ -223,7 +233,7 @@ int main(int argc, char *argv[])
 
     dbs.cutoff = CUTOFF;
     dbs.all    = ALL;
-    dbs.breads = breads;
+    dbs.treads = treads;
     rewind(ixfile);
     fwrite(&dbs,sizeof(HITS_DB),1,ixfile);
   }
