@@ -61,7 +61,7 @@
 #define PATHSEP "/"
 #endif
 
-static char *Usage = "[-udqUQ] [-w<int(80)>] <path:db|dam> [ <reads:range> ... ]";
+static char *Usage = "[-mudqUQ] [-w<int(80)>] <path:db|dam> [ <reads:range> ... ]";
 
 #define LAST_READ_SYMBOL  '$'
 
@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
 
   int         reps, *pts;
 
+  int         PB_MAP;
   int         DUST, TRIM, UPPER;
   int         QVTOO, QVNUR, DAM;
   int         WIDTH;
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
       if (argv[i][0] == '-')
         switch (argv[i][1])
         { default:
-            ARG_FLAGS("udqUQ")
+            ARG_FLAGS("mudqUQ")
             break;
           case 'w':
             ARG_NON_NEGATIVE(WIDTH,"Line width")
@@ -106,6 +107,7 @@ int main(int argc, char *argv[])
     argc = j;
 
     DAM   = 0;
+    PB_MAP   = flags['m'];
     DUST  = flags['d'];
     TRIM  = 1-flags['u'];
     UPPER = 1+flags['U'];
@@ -357,11 +359,16 @@ int main(int argc, char *argv[])
                 if (QVNUR)
                   printf("@%s/%d/%d_%d",flist[map],r->origin,r->fpulse,r->fpulse+len);
                 else
+                  if (PB_MAP)
+                  // For PacBio: print DB index, well#, length
+                  printf("%d %d %d",i,r->origin,r->rlen);
+                  else
                   printf(">%s/%d/%d_%d",flist[map],r->origin,r->fpulse,r->fpulse+len);
                 if (qv > 0)
                   printf(" RQ=0.%3d",qv);
               }
             printf("\n");
+            if (PB_MAP) continue;
 
             if (QVNUR)
               Load_QVentry(db,i,entry,UPPER);
