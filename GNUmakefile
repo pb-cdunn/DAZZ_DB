@@ -36,6 +36,6 @@ clean:
 	rm -f DBupgrade.Sep.25.2014 DBupgrade.Dec.31.2014 DUSTupgrade.Jan.1.2015
 	rm -f dazz.db.tar.gz
 
-SRCS:=$(notdir $(wildcard ${THISDIR}/*.c))
+SRCS:=DB.c QV.c
 DEPS:=$(patsubst %.c,%.d,${SRCS})
 -include ${DEPS}
