@@ -8,9 +8,11 @@ PREFIX=$PWD/build
 cd ${THISDIR}
 source bamboo_make.sh
 cd -
-cd ${PREFIX}
-tar zcf DAZZ_DB-SNAPSHOT.tgz bin lib include
-NEXUS_BASEURL=http://ossnexus.pacificbiosciences.com/repository
-NEXUS_URL=$NEXUS_BASEURL/unsupported/gcc-4.9.2
-curl -v -n --upload-file DAZZ_DB-SNAPSHOT.tgz $NEXUS_URL/DAZZ_DB-SNAPSHOT.tgz
-cd -
+if [[ $bamboo_planRepository_branchName == "develop" ]]; then
+  cd ${PREFIX}
+  tar zcf DAZZ_DB-SNAPSHOT.tgz bin lib include
+  NEXUS_BASEURL=http://ossnexus.pacificbiosciences.com/repository
+  NEXUS_URL=$NEXUS_BASEURL/unsupported/gcc-6.4.0
+  curl -v -n --upload-file DAZZ_DB-SNAPSHOT.tgz $NEXUS_URL/DAZZ_DB-SNAPSHOT.tgz
+  cd -
+fi
