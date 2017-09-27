@@ -6,7 +6,21 @@ set -vex
 
 PREFIX=$PWD/build
 cd ${THISDIR}
-source bamboo_make.sh
+module load gcc/6.4.0
+module load git/2.8.3
+module load ccache
+export CCACHE_COMPILERCHECK='%compiler% -dumpversion'
+
+export CPPFLAGS=-D_GNU_SOURCE
+DEFAULT_PREFIX=$PWD/build
+PREFIX=${PREFIX:-${DEFAULT_PREFIX}}
+rm -rf ${PREFIX}
+mkdir -p ${PREFIX}/lib ${PREFIX}/bin ${PREFIX}/include
+make clean
+make -j
+make PREFIX=${PREFIX} install
+cp *.h ${PREFIX}/include
+
 cd -
 if [[ $bamboo_planRepository_branchName == "develop" ]]; then
   cd ${PREFIX}
