@@ -2,7 +2,7 @@
  *
  *  Adds the given .arrow files to an existing DB "path".  The input files must be added in
  *  the same order as the .fasta files were and have the same root names, e.g. FOO.fasta
- *  and FOO.arrow.  The files can be added incrementally but must be added in the same order
+ *  and FOO.arrow.  The files can be added incrementally but must be added in the same order  
  *  as the .fasta files.  This is enforced by the program.  With the -l option set the
  *  compression scheme is a bit lossy to get more compression (see the description of dexqv
  *  in the DEXTRACTOR module).
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
         exit (1);
       }
 
-    if ( (INFILE == NULL && ! PIPE && argc <= 2) ||
+    if ( (INFILE == NULL && ! PIPE && argc <= 2) || 
         ((INFILE != NULL || PIPE) && argc != 2))
       { fprintf(stderr,"Usage: %s %s\n",Prog_Name,Usage);
         exit (1);
@@ -269,12 +269,12 @@ int main(int argc, char *argv[])
                 }
               if (ng->name == NULL)
                 goto error;
-
+  
               core = Root(ng->name,".arrow");
               path = PathTo(ng->name);
               if ((input = Fopen(Catenate(path,"/",core,".arrow"),"r")) == NULL)
                 goto error;
-
+  
               first = 0;
               while (cell < nfiles)
                 { if (fscanf(istub,DB_FDATA,&last,fname,prolog) != 3)
@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
                 { fprintf(stderr,"%s: %s.fasta has never been added to DB\n",Prog_Name,core);
                   goto error;
                 }
-
+        
               if (first > 0 && reads[first-1].coff < 0)
                 { fprintf(stderr,"%s: Predecessor of %s.arrow has not been added yet\n",
                                  Prog_Name,core);
@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
                 { fprintf(stderr,"%s: %s.arrow has already been added\n",Prog_Name,core);
                   goto error;
                 }
-
+  
               if (VERBOSE)
                 { fprintf(stderr,"Adding '%s.arrow' ...\n",core);
                   fflush(stderr);
@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
         //    match, open it for incorporation
 
         else
-          { first = last;
+          { first = last;  
             strcpy(lname,fname);
             if (fscanf(istub,DB_FDATA,&last,fname,prolog) != 3)
               { fprintf(stderr,"%s: %s.db is corrupted, read failed\n",core,Prog_Name);

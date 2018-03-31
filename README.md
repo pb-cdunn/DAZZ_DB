@@ -44,7 +44,7 @@ A DB con contain the information needed by Quiver, or by Arrow, or neither, but
 not both.  A DB containing neither Quiver or Arrow information is termed a
 Sequence-DB (S-DB).  A DB with Quiver information is a Quiver-DB (Q-DB) and
 a DB with Arrow information is an Arrow-DB (A-DB). All commands are aware of
-the state of a DB and respond to options according to their type.
+the state of a DB and respond to options according to their type. 
 
 A Dazzler DB consists of one named, *visible* file, e.g. FOO.db, and several
 *invisible* secondary files encoding various elements of the DB.  The secondary files
@@ -171,7 +171,7 @@ input.  That is, this is a perfect inversion, including the reconstitution of th
 proper .fasta headers.  Because of this property, one can, if desired, delete the
 .fasta source files once they are in the DB as they can always be recreated from it.
 Entries imported from the standard input will be place in the faux file name given on
-import, or to the standard output if no name was given.
+import, or to the standard output if no name was given. 
 By default the output sequences are in lower case and 80 chars per line.  The -U option
 specifies upper case should be used, and the characters per line, or line width, can be
 set to any positive value with the -w option.
@@ -199,7 +199,7 @@ were input.  That is, this is a perfect inversion, including the reconstitution 
 proper .quiva headers.  Because of this property, one can, if desired, delete the
 .quiva source files once they are in the DB as they can always be recreated from it.
 Entries imported from the standard input will be placed in the faux file name given on
-import, or to the standard output if no name was given.
+import, or to the standard output if no name was given. 
 By .fastq convention each QV vector is output as a line without new-lines, and by
 default the Deletion Tag entry is in lower case letters.  The -U option specifies
 upper case letters should be used instead.
@@ -225,7 +225,7 @@ were input.  That is, this is a perfect inversion, including the reconstitution 
 proper .arrow headers.  Because of this property, one can, if desired, delete the
 .arrow source files once they are in the DB as they can always be recreated from it.
 Entries imported from the standard input will be placed in the faux file name given on
-import, or to the standard output if no name was given.
+import, or to the standard output if no name was given. 
 By default the output sequences are formatted 80 chars per line,
 but the characters per line, or line width, can be
 set to any positive value with the -w option.
@@ -497,7 +497,7 @@ generation process so that one can reproducibly generate the same sequence. If t
 parameter is missing, then the job id of the invocation seeds the random number
 generator effectively guaranteeing a different sequence with each invocation.
 
-Example: A small complete example of most of the commands above.
+Example: A small complete example of most of the commands above. 
 
 ```
 > rangen 1.0 >R.fasta           //  Generate a randome 1Mbp sequence R.fasta

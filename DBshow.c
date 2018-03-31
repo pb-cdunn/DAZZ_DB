@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
             allflag = 0;
           else
             allflag = DB_BEST;
-
+ 
           nid = 0;
           oid = db->ufirst;
           lid = oid + db->nreads;
@@ -569,7 +569,7 @@ int main(int argc, char *argv[])
               }
             else if (ARROW)
               { int k;
-
+    
                 for (k = fst; k+WIDTH < lst; k += WIDTH)
                   printf("%.*s\n",WIDTH,arrow+k);
                 if (k < lst)

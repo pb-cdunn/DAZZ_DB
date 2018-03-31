@@ -1474,7 +1474,7 @@ int Load_Read(HITS_DB *db, int i, char *read, int ascii)
   return (0);
 }
 
-// Load into 'read' the i'th arrow in 'db'.  As an ASCII string if ascii is 1,
+// Load into 'read' the i'th arrow in 'db'.  As an ASCII string if ascii is 1, 
 //   and as a numeric string otherwise.
 //
 
