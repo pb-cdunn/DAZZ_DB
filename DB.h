@@ -311,7 +311,7 @@ typedef struct
 //                                    contains the variable length data
 
 #ifdef C2NIM
-#mangle "_track" "HITS_TRACK"
+#mangle "_track" "DAZZ_TRACK"
 #endif
 
 typedef struct _track
