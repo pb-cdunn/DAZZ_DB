@@ -98,5 +98,4 @@ endif
 dazzdb_dep = declare_dependency(
   include_directories : include_directories('.'),
   link_with : dazzdb_libdazzdb,
-  dependencies : dazzdb_deps,
   version : meson.project_version())
