@@ -13,26 +13,32 @@ cd ${THISDIR}
 
 export CCACHE_COMPILERCHECK='%compiler% -dumpversion'
 
-#export CPPFLAGS=-D_GNU_SOURCE
+case "${bamboo_planRepository_branchName}" in
+  develop|master)
+    export PREFIX_ARG="/mnt/software/d/dazzdb/${bamboo_planRepository_branchName}"
+    export BUILD_NUMBER="${bamboo_globalBuildNumber:-0}"
+    DESTDIR=/
+    ;;
+  *)
+    export PREFIX_ARG=/PREFIX
+    export BUILD_NUMBER="0"
+    DESTDIR="$(pwd)/install"
+    rm -rf "${DESTDIR}"
+    ;;
+esac
 
 # rm -rf ./build
-meson --buildtype=release --strip --libdir=lib --prefix='/PREFIX' -Dtests=false --wrap-mode nofallback ./build .
+meson --buildtype=release --strip --libdir=lib --prefix="${PREFIX_ARG}" -Dtests=false --wrap-mode nofallback ./build .
 
 TERM='dumb' ninja -C ./build -v
 
-DESTDIR="$(pwd)/DESTDIR"
-rm -rf "${DESTDIR}"
+# TODO: Add test here.
 
-TERM='dumb' DESTDIR="${DESTDIR}" ninja -C ./build -v install
-
-cd "${DESTDIR}/PREFIX"
-LD_LIBRARY_PATH=lib ldd -r bin/DBshow
-tar vzcf DAZZ_DB-SNAPSHOT.tgz bin lib include
-
-if [[ $bamboo_planRepository_branchName == "develop" ]]; then
-  NEXUS_BASEURL=http://ossnexus.pacificbiosciences.com/repository
-  NEXUS_URL=$NEXUS_BASEURL/unsupported/gcc-6.4.0
-  curl -v -n --upload-file DAZZ_DB-SNAPSHOT.tgz $NEXUS_URL/DAZZ_DB-SNAPSHOT.tgz
-fi
-
-cd -
+case "${bamboo_planRepository_branchName}" in
+  develop|master)
+    TERM='dumb' DESTDIR="${DESTDIR}" ninja -C ./build -v install
+    chmod -R a+rwx "${DESTDIR}${PREFIX_ARG}"/*
+    module load dazzdb/${bamboo_planRepository_branchName}
+    ldd -r $(which DBshow)
+    ;;
+esac
